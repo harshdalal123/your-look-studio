@@ -13,7 +13,7 @@ const Navigation = () => {
         <Link to="/" className="flex items-center gap-2 text-xl font-bold">
           <Sparkles className="h-6 w-6 text-secondary" />
           <span className="bg-gradient-accent bg-clip-text text-transparent">
-            YourLook
+            XYZ Look by Harsh Dalal
           </span>
         </Link>
 

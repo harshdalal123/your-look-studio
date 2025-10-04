@@ -28,11 +28,11 @@ const Hero = () => {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-background leading-tight">
-            Design Your Dream
-            <br />
             <span className="bg-gradient-accent bg-clip-text text-transparent">
-              Clothing
+              XYZ Look
             </span>
+            <br />
+            by Harsh Dalal
           </h1>
 
           <p className="text-xl text-background/90 max-w-2xl mx-auto">
