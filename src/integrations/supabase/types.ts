@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      designs: {
+        Row: {
+          ai_generated_image_url: string | null
+          clothing_type: string
+          color: string
+          created_at: string
+          design_data: Json | null
+          design_text: string | null
+          fabric: string
+          id: string
+          name: string
+          price: number
+          size: string
+          updated_at: string
+          uploaded_image_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ai_generated_image_url?: string | null
+          clothing_type: string
+          color: string
+          created_at?: string
+          design_data?: Json | null
+          design_text?: string | null
+          fabric: string
+          id?: string
+          name: string
+          price: number
+          size: string
+          updated_at?: string
+          uploaded_image_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ai_generated_image_url?: string | null
+          clothing_type?: string
+          color?: string
+          created_at?: string
+          design_data?: Json | null
+          design_text?: string | null
+          fabric?: string
+          id?: string
+          name?: string
+          price?: number
+          size?: string
+          updated_at?: string
+          uploaded_image_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

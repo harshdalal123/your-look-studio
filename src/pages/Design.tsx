@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Type, Image as ImageIcon, Save, ShoppingCart, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Palette, Type, Image as ImageIcon, Save, ShoppingCart, Loader2, Sparkles, Ruler } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,11 +19,13 @@ const Design = () => {
   const [selectedType, setSelectedType] = useState("t-shirt");
   const [selectedColor, setSelectedColor] = useState("#FF6B9D");
   const [selectedFabric, setSelectedFabric] = useState("cotton");
+  const [selectedSize, setSelectedSize] = useState("M");
   const [designText, setDesignText] = useState("");
-  const [basePrice, setBasePrice] = useState(899);
+  const [aiPrompt, setAiPrompt] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [aiGeneratedImage, setAiGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,11 +37,15 @@ const Design = () => {
   }, [productFromGallery]);
 
   const clothingTypes = [
-    { value: "t-shirt", label: "T-Shirt", basePrice: 899 },
-    { value: "shirt", label: "Shirt", basePrice: 1999 },
-    { value: "suit", label: "Suit", basePrice: 8999 },
-    { value: "dress", label: "Dress", basePrice: 3499 },
-    { value: "hoodie", label: "Hoodie", basePrice: 1499 },
+    { value: "t-shirt", label: "T-Shirt", basePrice: 899, category: ["men", "women", "kids"] },
+    { value: "shirt", label: "Shirt", basePrice: 1999, category: ["men", "women"] },
+    { value: "suit", label: "Suit", basePrice: 8999, category: ["men", "women"] },
+    { value: "dress", label: "Dress", basePrice: 3499, category: ["women", "kids"] },
+    { value: "hoodie", label: "Hoodie", basePrice: 1499, category: ["men", "women", "kids"] },
+    { value: "blazer", label: "Blazer", basePrice: 5999, category: ["men", "women"] },
+    { value: "jacket", label: "Jacket", basePrice: 4499, category: ["men", "women", "kids"] },
+    { value: "skirt", label: "Skirt", basePrice: 1999, category: ["women", "kids"] },
+    { value: "pants", label: "Pants", basePrice: 2499, category: ["men", "women", "kids"] },
   ];
 
   const fabricOptions = [
@@ -49,17 +56,71 @@ const Design = () => {
     { value: "polyester", label: "Polyester", priceMultiplier: 0.8 },
   ];
 
-  const colors = [
-    "#FF6B9D",
-    "#A855F7",
-    "#000000",
-    "#FFFFFF",
-    "#3B82F6",
-    "#10B981",
+  const sizes = [
+    { value: "XS", label: "XS (Extra Small)" },
+    { value: "S", label: "S (Small)" },
+    { value: "M", label: "M (Medium)" },
+    { value: "L", label: "L (Large)" },
+    { value: "XL", label: "XL (Extra Large)" },
+    { value: "XXL", label: "XXL (2XL)" },
+    { value: "XXXL", label: "XXXL (3XL)" },
   ];
 
-  const handleSaveDesign = () => {
-    toast.success("Design saved successfully!");
+  const colors = [
+    { hex: "#FF6B9D", name: "Pink" },
+    { hex: "#A855F7", name: "Purple" },
+    { hex: "#000000", name: "Black" },
+    { hex: "#FFFFFF", name: "White" },
+    { hex: "#3B82F6", name: "Blue" },
+    { hex: "#10B981", name: "Green" },
+    { hex: "#EF4444", name: "Red" },
+    { hex: "#F59E0B", name: "Orange" },
+    { hex: "#FBBF24", name: "Yellow" },
+    { hex: "#8B5CF6", name: "Violet" },
+    { hex: "#EC4899", name: "Hot Pink" },
+    { hex: "#6366F1", name: "Indigo" },
+    { hex: "#14B8A6", name: "Teal" },
+    { hex: "#F97316", name: "Deep Orange" },
+    { hex: "#84CC16", name: "Lime" },
+    { hex: "#06B6D4", name: "Cyan" },
+  ];
+
+  const handleSaveDesign = async () => {
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please sign in to save your design");
+        return;
+      }
+
+      const price = calculatePrice();
+      const { error } = await supabase.from("designs").insert({
+        user_id: user.id,
+        name: `${selectedType} - ${new Date().toLocaleDateString()}`,
+        clothing_type: selectedType,
+        color: selectedColor,
+        fabric: selectedFabric,
+        size: selectedSize,
+        design_text: designText,
+        uploaded_image_url: uploadedImage,
+        ai_generated_image_url: aiGeneratedImage,
+        price: price,
+        design_data: {
+          aiPrompt,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      if (error) throw error;
+      toast.success("Design saved successfully!");
+    } catch (error: any) {
+      console.error("Error saving design:", error);
+      toast.error("Failed to save design. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddToCart = () => {
@@ -71,13 +132,17 @@ const Design = () => {
     const typeData = clothingTypes.find(t => t.value === selectedType);
     const fabricData = fabricOptions.find(f => f.value === selectedFabric);
     if (!typeData || !fabricData) return 0;
-    return Math.round(typeData.basePrice * fabricData.priceMultiplier);
+    
+    let sizeMultiplier = 1;
+    if (selectedSize === "XL") sizeMultiplier = 1.1;
+    else if (selectedSize === "XXL") sizeMultiplier = 1.2;
+    else if (selectedSize === "XXXL") sizeMultiplier = 1.3;
+    
+    return Math.round(typeData.basePrice * fabricData.priceMultiplier * sizeMultiplier);
   };
 
   const handleTypeChange = (value: string) => {
     setSelectedType(value);
-    const typeData = clothingTypes.find(t => t.value === value);
-    if (typeData) setBasePrice(typeData.basePrice);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +161,51 @@ const Design = () => {
     }
   };
 
+  const handleAIDesign = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error("Please describe your design idea");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-tryon', {
+        body: {
+          prompt: aiPrompt,
+          clothingType: selectedType,
+          color: selectedColor,
+          type: "design"
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.imageUrl) {
+        setAiGeneratedImage(data.imageUrl);
+        toast.success("AI design generated successfully!");
+      } else {
+        throw new Error("No image generated");
+      }
+    } catch (error: any) {
+      console.error("AI design error:", error);
+      if (error.message?.includes("Rate limit")) {
+        toast.error("Rate limit exceeded. Please try again later.");
+      } else if (error.message?.includes("Payment required")) {
+        toast.error("AI credits required. Please add credits to continue.");
+      } else {
+        toast.error("Failed to generate AI design. Please try again.");
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleAITryOn = async () => {
+    if (!uploadedImage) {
+      toast.error("Please upload your photo first");
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('ai-tryon', {
@@ -104,7 +213,8 @@ const Design = () => {
           imageBase64: uploadedImage,
           designText,
           clothingType: selectedType,
-          color: selectedColor
+          color: selectedColor,
+          type: "tryon"
         }
       });
 
@@ -136,9 +246,38 @@ const Design = () => {
       
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <div className="mb-8">
+          <div className="mb-8 space-y-4">
             <h1 className="text-4xl font-bold mb-2">Design Studio</h1>
-            <p className="text-muted-foreground">Create your perfect custom clothing</p>
+            <p className="text-lg text-muted-foreground">
+              👗👕👔 Whether you&apos;re shopping for Men, Women, or Kids, you&apos;re in the right place to create clothing that&apos;s truly yours.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ Choose Your Style</h3>
+                <p className="text-sm text-muted-foreground">Select from T-shirts, shirts, suits, dresses, and more — for men, women, or kids.</p>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ AI Custom Design</h3>
+                <p className="text-sm text-muted-foreground">Describe your dream outfit and let AI bring it to life in seconds.</p>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ Perfect Fit Sizing</h3>
+                <p className="text-sm text-muted-foreground">Input your measurements or choose your standard size for a flawless fit.</p>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ Image Upload & Placement</h3>
+                <p className="text-sm text-muted-foreground">Upload any image and adjust its size, placement, and rotation on your outfit.</p>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ Try-On with Your Photo</h3>
+                <p className="text-sm text-muted-foreground">Upload your photo and preview how your custom outfit will look on you.</p>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">✅ Order Your Design</h3>
+                <p className="text-sm text-muted-foreground">Love what you made? Place an order instantly and get it delivered to your door.</p>
+              </Card>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -177,8 +316,30 @@ const Design = () => {
                   </Select>
                 </div>
 
-                <Tabs defaultValue="color" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                <div>
+                  <Label className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Ruler className="h-4 w-4" />
+                    Size
+                  </Label>
+                  <Select value={selectedSize} onValueChange={setSelectedSize}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sizes.map((size) => (
+                        <SelectItem key={size.value} value={size.value}>
+                          {size.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Tabs defaultValue="ai-design" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="ai-design">
+                      <Sparkles className="h-4 w-4" />
+                    </TabsTrigger>
                     <TabsTrigger value="color">
                       <Palette className="h-4 w-4" />
                     </TabsTrigger>
@@ -190,20 +351,52 @@ const Design = () => {
                     </TabsTrigger>
                   </TabsList>
 
+                  <TabsContent value="ai-design" className="space-y-4">
+                    <Label className="text-sm font-medium">AI Design Generator</Label>
+                    <Textarea
+                      placeholder="Describe your design... (e.g., 'black oversized hoodie with galaxy print')"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      rows={4}
+                    />
+                    <Button 
+                      className="w-full bg-gradient-accent border-0"
+                      onClick={handleAIDesign}
+                      disabled={isGenerating || !aiPrompt.trim()}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Generate AI Design
+                        </>
+                      )}
+                    </Button>
+                  </TabsContent>
+
                   <TabsContent value="color" className="space-y-4">
                     <Label className="text-sm font-medium">Choose Color</Label>
-                    <div className="grid grid-cols-6 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {colors.map((color) => (
                         <button
-                          key={color}
-                          onClick={() => setSelectedColor(color)}
-                          className={`h-10 w-10 rounded-lg border-2 transition-all ${
-                            selectedColor === color
-                              ? "border-secondary scale-110"
+                          key={color.hex}
+                          onClick={() => setSelectedColor(color.hex)}
+                          className={`h-12 rounded-lg border-2 transition-all flex items-center gap-2 px-2 ${
+                            selectedColor === color.hex
+                              ? "border-secondary scale-105"
                               : "border-border hover:scale-105"
                           }`}
-                          style={{ backgroundColor: color }}
-                        />
+                        >
+                          <div 
+                            className="h-8 w-8 rounded"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="text-xs font-medium">{color.name}</span>
+                        </button>
                       ))}
                     </div>
                   </TabsContent>
@@ -258,15 +451,28 @@ const Design = () => {
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-gradient-accent border-0" onClick={handleSaveDesign}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Design
+                  <Button 
+                    className="w-full bg-gradient-accent border-0" 
+                    onClick={handleSaveDesign}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Design
+                      </>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full" 
                     onClick={handleAITryOn}
-                    disabled={isGenerating}
+                    disabled={isGenerating || !uploadedImage}
                   >
                     {isGenerating ? (
                       <>
@@ -274,12 +480,15 @@ const Design = () => {
                         Generating...
                       </>
                     ) : (
-                      "Generate AI Try-On"
+                      <>
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        AI Try-On with Photo
+                      </>
                     )}
                   </Button>
                   <Button className="w-full" onClick={handleAddToCart}>
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    Add to Cart
+                    Add to Cart - ₹{calculatePrice().toLocaleString('en-IN')}
                   </Button>
                 </div>
               </CardContent>
@@ -392,10 +601,11 @@ const Design = () => {
                 <div className="mt-6 text-center space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Selected: <span className="font-medium text-foreground capitalize">{selectedType.replace("-", " ")}</span> • 
-                    <span className="font-medium text-foreground capitalize ml-1">{selectedFabric.replace("-", " ")}</span>
+                    <span className="font-medium text-foreground capitalize ml-1">{selectedFabric.replace("-", " ")}</span> • 
+                    <span className="font-medium text-foreground ml-1">Size {selectedSize}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Click on the canvas to customize your design
+                    🧵 Start designing now and wear your imagination
                   </p>
                 </div>
               </CardContent>
