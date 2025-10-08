@@ -246,44 +246,44 @@ const Design = () => {
       
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <div className="mb-8 space-y-4">
-            <h1 className="text-4xl font-bold mb-2">Design Studio</h1>
-            <p className="text-lg text-muted-foreground">
-              👗👕👔 Whether you&apos;re shopping for Men, Women, or Kids, you&apos;re in the right place to create clothing that&apos;s truly yours.
+          <div className="mb-6 md:mb-8 space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Design Studio</h1>
+            <p className="text-base md:text-lg text-muted-foreground">
+              👗👕👔 Create clothing that&apos;s truly yours — for Men, Women, or Kids.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ Choose Your Style</h3>
-                <p className="text-sm text-muted-foreground">Select from T-shirts, shirts, suits, dresses, and more — for men, women, or kids.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ Choose Your Style</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Select from T-shirts, shirts, suits, dresses, and more.</p>
               </Card>
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ AI Custom Design</h3>
-                <p className="text-sm text-muted-foreground">Describe your dream outfit and let AI bring it to life in seconds.</p>
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ AI Custom Design</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Describe your dream outfit and let AI bring it to life.</p>
               </Card>
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ Perfect Fit Sizing</h3>
-                <p className="text-sm text-muted-foreground">Input your measurements or choose your standard size for a flawless fit.</p>
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ Perfect Fit Sizing</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Choose your standard size for a flawless fit.</p>
               </Card>
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ Image Upload & Placement</h3>
-                <p className="text-sm text-muted-foreground">Upload any image and adjust its size, placement, and rotation on your outfit.</p>
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ Image Upload</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Upload any image for your custom design.</p>
               </Card>
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ Try-On with Your Photo</h3>
-                <p className="text-sm text-muted-foreground">Upload your photo and preview how your custom outfit will look on you.</p>
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ Try-On with AI</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Preview how your custom outfit will look on you.</p>
               </Card>
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">✅ Order Your Design</h3>
-                <p className="text-sm text-muted-foreground">Love what you made? Place an order instantly and get it delivered to your door.</p>
+              <Card className="p-3 md:p-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">✅ Order & Save</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Save designs and place orders instantly.</p>
               </Card>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             {/* Design Tools */}
             <Card className="lg:col-span-1">
-              <CardContent className="pt-6 space-y-6">
+              <CardContent className="pt-4 md:pt-6 space-y-4 md:space-y-6">
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Clothing Type</Label>
                   <Select value={selectedType} onValueChange={handleTypeChange}>
@@ -336,18 +336,22 @@ const Design = () => {
                 </div>
 
                 <Tabs defaultValue="ai-design" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="ai-design">
+                  <TabsList className="grid w-full grid-cols-4 h-auto">
+                    <TabsTrigger value="ai-design" className="flex-col gap-1 py-2">
                       <Sparkles className="h-4 w-4" />
+                      <span className="text-xs hidden sm:inline">AI</span>
                     </TabsTrigger>
-                    <TabsTrigger value="color">
+                    <TabsTrigger value="color" className="flex-col gap-1 py-2">
                       <Palette className="h-4 w-4" />
+                      <span className="text-xs hidden sm:inline">Color</span>
                     </TabsTrigger>
-                    <TabsTrigger value="text">
+                    <TabsTrigger value="text" className="flex-col gap-1 py-2">
                       <Type className="h-4 w-4" />
+                      <span className="text-xs hidden sm:inline">Text</span>
                     </TabsTrigger>
-                    <TabsTrigger value="image">
+                    <TabsTrigger value="image" className="flex-col gap-1 py-2">
                       <ImageIcon className="h-4 w-4" />
+                      <span className="text-xs hidden sm:inline">Image</span>
                     </TabsTrigger>
                   </TabsList>
 
@@ -380,22 +384,22 @@ const Design = () => {
 
                   <TabsContent value="color" className="space-y-4">
                     <Label className="text-sm font-medium">Choose Color</Label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {colors.map((color) => (
                         <button
                           key={color.hex}
                           onClick={() => setSelectedColor(color.hex)}
-                          className={`h-12 rounded-lg border-2 transition-all flex items-center gap-2 px-2 ${
+                          className={`h-12 rounded-lg border-2 transition-all flex items-center gap-1.5 px-2 ${
                             selectedColor === color.hex
                               ? "border-secondary scale-105"
                               : "border-border hover:scale-105"
                           }`}
                         >
                           <div 
-                            className="h-8 w-8 rounded"
+                            className="h-8 w-8 rounded flex-shrink-0"
                             style={{ backgroundColor: color.hex }}
                           />
-                          <span className="text-xs font-medium">{color.name}</span>
+                          <span className="text-xs font-medium truncate">{color.name}</span>
                         </button>
                       ))}
                     </div>
@@ -496,7 +500,7 @@ const Design = () => {
 
             {/* Preview Canvas */}
             <Card className="lg:col-span-2">
-              <CardContent className="p-8">
+              <CardContent className="p-4 md:p-8">
                 <div className="aspect-square bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
                   {aiGeneratedImage ? (
                     <img 
@@ -505,10 +509,10 @@ const Design = () => {
                       className="max-w-full max-h-full object-contain"
                     />
                   ) : (
-                    <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="relative w-full h-full flex items-center justify-center p-4">
                       <svg 
                         viewBox="0 0 400 600" 
-                        className="w-64 h-96"
+                        className="w-48 h-72 md:w-64 md:h-96"
                         style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))' }}
                       >
                         {selectedType === 't-shirt' && (
@@ -598,8 +602,8 @@ const Design = () => {
                     </div>
                   )}
                 </div>
-                <div className="mt-6 text-center space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                <div className="mt-4 md:mt-6 text-center space-y-2">
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Selected: <span className="font-medium text-foreground capitalize">{selectedType.replace("-", " ")}</span> • 
                     <span className="font-medium text-foreground capitalize ml-1">{selectedFabric.replace("-", " ")}</span> • 
                     <span className="font-medium text-foreground ml-1">Size {selectedSize}</span>
